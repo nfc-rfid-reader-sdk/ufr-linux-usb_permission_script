@@ -1,18 +1,21 @@
 #!/bin/bash
- 
-ROOT_UID=0
-if [ "$UID" -eq "$ROOT_UID" ]; then
-    #echo -n "Enter new group :"
-    #     read GROUPADD
-   #  
-     GROUPADD="usb_access"
-      groupadd $GROUPADD
-       echo -n "Enter an existing user  :"
-           read ADDUSER
-      adduser $ADDUSER  $GROUPADD
-   echo 'SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", MODE="0664", GROUP="'${GROUPADD}'" ' >> /etc/udev/rules.d/50-dlogic.rules 
-     
+if [ "$(id -u)" = "0" ]; then
+    rm "/etc/modprobe.d/ftdi.conf"
+    touch "/etc/modprobe.d/ftdi.conf"
+    echo "blacklist ftdi_sio" >> "/etc/modprobe.d/ftdi.conf"
+    echo "blacklist usbserial" >> "/etc/modprobe.d/ftdi.conf"
+    echo "-------------------------------------------------------------------------"
+    echo "Added \"ftdi_conf\" blacklist file to /etc/modprobe.d/ "
+    echo "-------------------------------------------------------------------------"
+    GROUPADD="usb_access"
+    groupadd $GROUPADD
+    echo -n "Enter an existing user  :"
+        read ADDUSER
+    adduser $ADDUSER  $GROUPADD
+    exit 1
 else
      echo "You Need To Be Root!"
 fi
-exit 0
+
+exec sudo "$0" "$@" # enters root mode, resets script and adds permissions and ftdi.confssss
+exit 1
